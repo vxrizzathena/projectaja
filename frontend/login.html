@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LogistikApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 420px;
+            width: 100%;
+            animation: slideUp 0.5s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .shake { animation: shake 0.4s ease; }
+
+        .logo { text-align: center; margin-bottom: 25px; }
+        .logo-icon { font-size: 48px; margin-bottom: 10px; }
+        .logo h1 { color: #1e3c72; font-size: 28px; margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 14px; text-align: center; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; margin-bottom: 6px; color: #333;
+            font-weight: 500; font-size: 14px;
+        }
+        .form-group input {
+            width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0;
+            border-radius: 8px; font-size: 14px; transition: all 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none; border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        .form-options {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; font-size: 13px;
+        }
+        .checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .forgot-link { color: #2a5298; text-decoration: none; font-weight: 500; }
+        .forgot-link:hover { text-decoration: underline; }
+
+        .btn-login {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white; border: none; border-radius: 8px; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(30, 60, 114, 0.3); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .demo-accounts {
+            margin-top: 20px; padding: 15px; background: #f8f9fa;
+            border-radius: 8px; font-size: 13px;
+        }
+        .demo-accounts p { margin-bottom: 8px; color: #555; }
+        .demo-row {
+            padding: 6px 10px; margin: 4px 0; background: #e9ecef;
+            border-radius: 5px; cursor: pointer; transition: background 0.2s;
+            font-family: monospace;
+        }
+        .demo-row:hover { background: #dee2e6; }
+
+        .register-link {
+            text-align: center; margin-top: 20px; color: #666; font-size: 14px;
+        }
+        .register-link a { color: #2a5298; text-decoration: none; font-weight: 600; }
+        .register-link a:hover { text-decoration: underline; }
+
+        .error-message, .success-message {
+            padding: 12px; border-radius: 8px; margin-bottom: 15px;
+            font-size: 14px; display: none; text-align: center;
+        }
+        .error-message { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .success-message { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+
+        input.error { border-color: #f44336 !important; }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="logo">
+            <div class="logo-icon">📦</div>
+            <h1>LogistikApp</h1>
+            <p class="subtitle">Sistem Pelacakan Distribusi Kurir Lokal</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Masukkan username" autocomplete="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required>
+            </div>
+
+            <div class="form-options">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rememberMe"> Ingat saya
+                </label>
+                <a href="#" class="forgot-link">Lupa password?</a>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">Masuk</button>
+        </form>
+
+        <div class="demo-accounts">
+            <p><strong>Akun Demo (klik untuk isi otomatis):</strong></p>
+            <div class="demo-row" onclick="fillDemo('dispatcher1', 'admin123')">dispatcher1 / admin123</div>
+            <div class="demo-row" onclick="fillDemo('kurir1', 'kurir123')">kurir1 / kurir123</div>
+            <div class="demo-row" onclick="fillDemo('customer1', 'user123')">customer1 / user123</div>
+        </div>
+
+        <div class="register-link">
+            Belum punya akun? <a href="register.html">Daftar sekarang</a>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const loginContainer = document.getElementById('loginContainer');
+
+        // Fungsi isi otomatis akun demo
+        function fillDemo(user, pass) {
+            document.getElementById('username').value = user;
+            document.getElementById('password').value = pass;
+            errorMessage.style.display = 'none';
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Reset state
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            document.querySelectorAll('input').forEach(i => i.classList.remove('error'));
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                showError('Username dan password wajib diisi');
+                return;
+            }
+
+            // Loading state
+            loginBtn.textContent = 'Memproses...';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Simpan data sesi
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showSuccess('Login berhasil! Mengalihkan ke dashboard...');
+                    
+                    setTimeout(() => {
+                        // Redirect berdasarkan role
+                        const role = data.user.role?.toLowerCase();
+                        if (role === 'dispatcher') window.location.href = 'index.html';
+                        else if (role === 'kurir') window.location.href = 'index.html';
+                        else window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showError(data.message || 'Username atau password salah');
+                }
+            } catch (error) {
+                showError('Gagal terhubung ke server. Pastikan backend sudah berjalan.');
+                console.error('Login error:', error);
+            } finally {
+                loginBtn.textContent = 'Masuk';
+                loginBtn.disabled = false;
+            }
+        });
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.style.display = 'block';
+            loginContainer.classList.add('shake');
+            setTimeout(() => loginContainer.classList.remove('shake'), 500);
+        }
+
+        function showSuccess(msg) {
+            successMessage.textContent = msg;
+            successMessage.style.display = 'block';
+        }
+
+        // Clear error saat user mengetik
+        document.getElementById('username').addEventListener('input', () => errorMessage.style.display = 'none');
+        document.getElementById('password').addEventListener('input', () => errorMessage.style.display = 'none');
+    </script>
+</body>
+</html>

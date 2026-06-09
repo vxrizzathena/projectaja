@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogistikApp</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+    :root{--primary:#1e3c72;--sec:#2a5298;--success:#16a34a;--warn:#d97706;--danger:#dc2626;--bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0}
+    body{background:var(--bg);color:var(--text)}
+
+    /* ── AUTH PAGE ── */
+    #authPage{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(135deg,#1e3c72,#2a5298)}
+    .auth-card{background:white;padding:40px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:420px;max-width:95vw}
+    .auth-card .logo{text-align:center;margin-bottom:28px}
+    .auth-card .logo .icon{font-size:48px}
+    .auth-card .logo h1{font-size:26px;color:var(--primary);margin:8px 0 4px}
+    .auth-card .logo p{color:var(--muted);font-size:13px}
+    .auth-card .tab-btns{display:flex;gap:8px;margin-bottom:24px}
+    .auth-card .tab-btn{flex:1;padding:10px;border:2px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:.2s}
+    .auth-card .tab-btn.active{background:var(--sec);color:white;border-color:var(--sec)}
+    .auth-tab{display:none}.auth-tab.active{display:block}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:var(--muted)}
+    .form-group input,.form-group select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;transition:.2s}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--sec)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn-full{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--sec));color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;margin-top:4px}
+    .btn-full:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-full:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .alert{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+    .alert-error{background:#fee2e2;color:#991b1b;border-left:4px solid var(--danger)}
+    .alert-success{background:#dcfce7;color:#166534;border-left:4px solid var(--success)}
+    .demo-box{margin-top:18px;padding:14px;background:#f8fafc;border-radius:8px;font-size:12px}
+    .demo-box p{color:var(--muted);margin-bottom:8px;font-weight:600}
+    .demo-row{padding:6px 10px;background:#e2e8f0;border-radius:5px;cursor:pointer;margin-bottom:4px;font-family:monospace;transition:.2s}
+    .demo-row:hover{background:#cbd5e1}
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ AUTH PAGE ══════════════════════════════ -->
+<div id="authPage">
+  <div class="auth-card">
+    <div class="logo">
+      <div class="icon">📦</div>
+      <h1>LogistikApp</h1>
+      <p>Sistem Pelacakan Distribusi Kurir Lokal</p>
+    </div>
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchAuthTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchAuthTab('register')">Daftar</button>
+    </div>
+
+    <!-- Login Tab -->
+    <div class="auth-tab active" id="tab-login">
+      <div class="alert alert-error" id="loginError"></div>
+      <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="username"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password"></div>
+      <button class="btn-full" id="loginBtn" onclick="doLogin()">Masuk</button>
+      <div class="demo-box">
+        <p>Akun Demo (klik untuk isi):</p>
+        <div class="demo-row" onclick="fillDemo('dispatcher1','admin123')">dispatcher1 / admin123 — Dispatcher</div>
+        <div class="demo-row" onclick="fillDemo('kurir1','kurir123')">kurir1 / kurir123 — Kurir</div>
+        <div class="demo-row" onclick="fillDemo('customer1','user123')">customer1 / user123 — Customer</div>
+      </div>
+    </div>
+
+    <!-- Register Tab -->
+    <div class="auth-tab" id="tab-register">
+      <div class="alert alert-error" id="regError"></div>
+      <div class="alert alert-success" id="regSuccess"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="regNama" placeholder="Nama lengkap"></div>
+        <div class="form-group"><label>Username</label><input type="text" id="regUser" placeholder="Username"></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="email@contoh.com"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Daftar Sebagai</label>
+          <select id="regRole"><option value="">Pilih peran</option><option value="customer">Customer</option><option value="kurir">Kurir</option><option value="dispatcher">Dispatcher</option></select>
+        </div>
+        <div class="form-group"><label>No. HP</label><input type="text" id="regHp" placeholder="08xx-xxxx-xxxx"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Min. 8 karakter"></div>
+        <div class="form-group"><label>Konfirmasi Password</label><input type="password" id="regPass2" placeholder="Ulangi password"></div>
+      </div>
+      <button class="btn-full" id="regBtn" onclick="doRegister()">Daftar Akun</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ APP PAGE ══════════════════════════════ -->
+<div id="appPage" style="display:none">
+  <style>
+    #appPage{display:flex}
+    .sidebar{width:250px;background:linear-gradient(180deg,var(--primary),var(--sec));color:white;min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100}
+    .sidebar .brand{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
+    .sidebar .brand .icon{font-size:36px}
+    .sidebar .brand h2{font-size:18px;margin-top:8px}
+    .sidebar .brand p{font-size:11px;opacity:.7;margin-top:3px}
+    .nav-links{flex:1;padding:12px 0;list-style:none}
+    .nav-links li{padding:14px 22px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;border-left:4px solid transparent;transition:.2s}
+    .nav-links li:hover{background:rgba(255,255,255,.1)}
+    .nav-links li.active{background:rgba(255,255,255,.15);border-left-color:white}
+    .nav-links li i{width:20px;font-size:16px}
+    .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)}
+    .sidebar-footer .user-box{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .user-avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+    .user-box .info h4{font-size:13px;font-weight:600}
+    .user-box .info p{font-size:11px;opacity:.7;text-transform:capitalize}
+    .btn-logout{width:100%;padding:9px;background:rgba(220,38,38,.7);color:white;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+    .btn-logout:hover{background:rgba(220,38,38,.9)}
+    .main{margin-left:250px;padding:28px;min-height:100vh;flex:1}
+    .page-section{display:none}.page-section.active{display:block}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+    .page-header h1{font-size:24px;color:var(--text)}
+    .page-header p{font-size:13px;color:var(--muted);margin-top:3px}
+    .btn{padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.2s}
+    .btn:hover{opacity:.85;transform:translateY(-1px)}
+    .btn-primary{background:var(--sec);color:white}
+    .btn-success{background:var(--success);color:white}
+    .btn-warning{background:var(--warn);color:white}
+    .btn-danger{background:var(--danger);color:white}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
+    .stat-card .val{font-size:30px;font-weight:700;margin:6px 0}
+    .stat-card .lbl{font-size:12px;color:var(--muted)}
+    .val-blue{color:#2563eb}.val-green{color:var(--success)}.val-orange{color:var(--warn)}.val-red{color:var(--danger)}.val-purple{color:#7c3aed}
+    /* Card */
+    .card{background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px}
+    .card-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .card-head h3{font-size:16px}
+    .card-body{padding:20px}
+    /* Table */
+    .tbl-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+    th{background:#f8fafc;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase}
+    tr:hover td{background:#f8fafc}
+    /* Badges */
+    .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-diterima{background:#dbeafe;color:#1e40af}
+    .badge-dalam_pengiriman{background:#ede9fe;color:#5b21b6}
+    .badge-terkirim{background:#dcfce7;color:#166534}
+    .badge-retur{background:#fee2e2;color:#991b1b}
+    .badge-gagal{background:#fecaca;color:#7f1d1d}
+    .badge-tersedia{background:#dcfce7;color:#166534}
+    .badge-sibuk{background:#fee2e2;color:#991b1b}
+    .badge-nonaktif{background:#f1f5f9;color:#475569}
+    .badge-aktif{background:#dcfce7;color:#166534}
+    /* Filters */
+    .filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .filters input,.filters select{padding:9px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px}
+    .filters input{flex:1;min-width:160px}
+    /* Modal */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center;backdrop-filter:blur(3px)}
+    .modal.active{display:flex}
+    .modal-box{background:white;border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:popIn .25s ease}
+    @keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .modal-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-head h3{font-size:18px}
+    .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+    .modal-body{padding:22px}
+    .modal-body .form-group{margin-bottom:14px}
+    .modal-body label{display:block;margin-bottom:5px;font-size:13px;font-weight:600;color:var(--muted)}
+    .modal-body input,.modal-body select,.modal-body textarea{width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:14px}
+    .modal-body input:focus,.modal-body select:focus,.modal-body textarea:focus{outline:none;border-color:var(--sec)}
+    .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    /* Tracking */
+    .track-bar{display:flex;gap:10px;margin-bottom:18px}
+    .track-bar input{flex:1;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px}
+    #trackResult{background:var(--card);padding:22px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:none}
+    .track-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .track-info .info-item label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase}
+    .track-info .info-item p{font-size:14px;font-weight:500;margin-top:2px}
+    .timeline{border-left:3px solid var(--sec);padding-left:20px}
+    .tl-item{position:relative;margin-bottom:16px}
+    .tl-item::before{content:'';position:absolute;left:-27px;top:4px;width:12px;height:12px;background:var(--sec);border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px var(--sec)}
+    .tl-item .tl-time{font-size:11px;color:var(--muted)}
+    .tl-item .tl-title{font-size:14px;font-weight:600;margin-top:2px}
+    .tl-item .tl-desc{font-size:13px;color:var(--muted);margin-top:1px}
+    /* Charts row */
+    .charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+    .chart-card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .chart-card h4{font-size:14px;margin-bottom:14px;color:var(--muted)}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.stats-grid{grid-template-columns:1fr 1fr}.form-2col{grid-template-columns:1fr}}
+  </style>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="icon">📦</div>
+      <h2>LogistikApp</h2>
+      <p>Distribusi Kurir Lokal</p>
+      <p>Developed by: UJ4NG</p>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li class="active" onclick="goTo('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+      <li onclick="goTo('paket')"><i class="fas fa-box"></i> Paket</li>
+      <li onclick="goTo('tracking')"><i class="fas fa-search-location"></i> Tracking</li>
+      <li class="dispatcher-only" onclick="goTo('kurir')"><i class="fas fa-motorcycle"></i> Kurir</li>
+      <li class="dispatcher-only" onclick="goTo('rute')"><i class="fas fa-route"></i> Rute</li>
+      <li class="dispatcher-only" onclick="goTo('hub')"><i class="fas fa-warehouse"></i> Hub</li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="user-box">
+        <div class="user-avatar" id="sideAvatar">?</div>
+        <div class="info">
+          <h4 id="sideName">-</h4>
+          <p id="sideRole">-</p>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <section class="page-section active" id="sec-dashboard">
+      <div class="page-header">
+        <div><h1>Dashboard</h1><p>Ringkasan sistem distribusi logistik</p></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="date" id="dashDari" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+          <span style="font-size:13px;color:var(--muted)">s/d</span>
+          <input type="date" id="dashSampai" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+          <button class="btn btn-primary" onclick="loadDashboard()"><i class="fas fa-filter"></i> Filter</button>
+          <button class="btn" style="background:#e2e8f0;color:var(--text)" onclick="resetDashFilter()"><i class="fas fa-times"></i> Reset</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="val val-blue" id="st-total">-</div><div class="lbl">Total Paket</div></div>
+        <div class="stat-card"><div class="val val-purple" id="st-kirim">-</div><div class="lbl">Dalam Pengiriman</div></div>
+        <div class="stat-card"><div class="val val-green" id="st-terkirim">-</div><div class="lbl">Terkirim</div></div>
+        <div class="stat-card"><div class="val val-red" id="st-retur">-</div><div class="lbl">Retur</div></div>
+        <div class="stat-card"><div class="val val-green" id="st-ontime">-</div><div class="lbl">On-Time Rate</div></div>
+        <div class="stat-card"><div class="val val-orange" id="st-gagal">-</div><div class="lbl">Gagal</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><h4>Status Pengiriman</h4><canvas id="chartStatus" height="220"></canvas></div>
+        <div class="chart-card"><h4>Kepadatan Rute</h4><canvas id="chartRute" height="220"></canvas></div>
+        <div class="chart-card"><h4>Performa Kurir</h4><canvas id="chartKurir" height="220"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ── PAKET ── -->
+    <section class="page-section" id="sec-paket">
+      <div class="page-header">
+        <div><h1>Manajemen Paket</h1><p>Kelola data paket pengiriman</p></div>
+        <button class="btn btn-primary dispatcher-only" onclick="openModalPaket()"><i class="fas fa-plus"></i> Paket Baru</button>
+      </div>
+      <div class="filters">
+        <input type="text" id="searchPaket" placeholder="Cari resi / penerima...">
+        <select id="filterStatus">
+          <option value="">Semua Status</option>
+          <option value="diterima">Diterima</option>
+          <option value="dalam_pengiriman">Dalam Pengiriman</option>
+          <option value="terkirim">Terkirim</option>
+          <option value="retur">Retur</option>
+          <option value="gagal">Gagal</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>No. Resi</th><th>Pengirim</th><th>Penerima</th><th>Alamat Tujuan</th><th>Berat</th><th>Rute</th><th>Kurir</th><th>Status</th><th>Estimasi</th><th>Aksi</th></tr></thead>
+          <tbody id="tblPaket"><tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── TRACKING ── -->
+    <section class="page-section" id="sec-tracking">
+      <div class="page-header"><div><h1>Lacak Paket</h1><p>Cek status pengiriman berdasarkan nomor resi</p></div></div>
+      <div class="track-bar">
+        <input type="text" id="trackInput" placeholder="Masukkan nomor resi..." onkeydown="if(event.key==='Enter')doTrack()">
+        <button class="btn btn-primary" onclick="doTrack()"><i class="fas fa-search"></i> Lacak</button>
+      </div>
+      <div id="trackResult">
+        <h3 id="trackResi" style="font-size:18px;margin-bottom:16px"></h3>
+        <div class="track-info" id="trackInfo"></div>
+        <h4 style="margin-bottom:12px;font-size:14px;color:var(--muted)">RIWAYAT PERJALANAN</h4>
+        <div class="timeline" id="trackTimeline"></div>
+      </div>
+    </section>
+
+    <!-- ── KURIR ── -->
+    <section class="page-section dispatcher-only" id="sec-kurir">
+      <div class="page-header">
+        <div><h1>Manajemen Kurir</h1><p>Kelola data kurir pengiriman</p></div>
+        <button class="btn btn-primary" onclick="openModalKurir()"><i class="fas fa-plus"></i> Tambah Kurir</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>No. HP</th><th>Plat Kendaraan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tblKurir"><tr><td colspan="5" style="text-align:center;color:var(--muted)">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── RUTE ── -->
+    <section class="page-section dispatcher-only" id="sec-rute">
+      <div class="page-header">
+        <div><h1>Manajemen Rute</h1><p>Kelola rute pengiriman antar hub</p></div>
+        <button class="btn btn-primary" onclick="openModalRute()"><i class="fas fa-plus"></i> Tambah Rute</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Kode</th><th>Nama Rute</th><th>Asal</th><th>Tujuan</th><th>Jarak</th><th>Est. Waktu</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tblRute"><tr><td colspan="8" style="text-align:center;color:var(--muted)">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── HUB ── -->
+    <section class="page-section dispatcher-only" id="sec-hub">
+      <div class="page-header">
+        <div><h1>Manajemen Hub</h1><p>Kelola titik distribusi / gudang</p></div>
+        <button class="btn btn-primary" onclick="openModalHub()"><i class="fas fa-plus"></i> Tambah Hub</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Nama Hub</th><th>Kota</th><th>Alamat</th><th>Kapasitas</th><th>Telepon</th><th>Aksi</th></tr></thead>
+          <tbody id="tblHub"><tr><td colspan="6" style="text-align:center;color:var(--muted)">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+<!-- Modal Paket -->
+<div class="modal" id="modalPaket">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalPaketTitle">Paket Baru</h3><button class="modal-close" onclick="closeModal('modalPaket')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-2col">
+        <div class="form-group"><label>Pengirim</label><input id="p-pengirim" placeholder="Nama pengirim"></div>
+        <div class="form-group"><label>Penerima</label><input id="p-penerima" placeholder="Nama penerima"></div>
+      </div>
+      <div class="form-group"><label>Alamat Tujuan</label><input id="p-alamat" placeholder="Alamat lengkap tujuan"></div>
+      <div class="form-2col">
+        <div class="form-group"><label>Berat (kg)</label><input type="number" id="p-berat" step="0.1" placeholder="0.0"></div>
+        <div class="form-group"><label>Tgl Estimasi</label><input type="date" id="p-estimasi"></div>
+      </div>
+      <div class="form-2col">
+        <div class="form-group"><label>Rute</label><select id="p-rute"><option value="">Pilih rute</option></select></div>
+        <div class="form-group"><label>Kurir</label><select id="p-kurir"><option value="">Pilih kurir</option></select></div>
+      </div>
+      <div class="form-2col">
+        <div class="form-group"><label>Hub Asal</label><select id="p-hub-asal"><option value="">Pilih hub</option></select></div>
+        <div class="form-group"><label>Hub Tujuan</label><select id="p-hub-tujuan"><option value="">Pilih hub</option></select></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:6px" onclick="submitPaket()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Status Paket -->
+<div class="modal" id="modalStatus">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Update Status Paket</h3><button class="modal-close" onclick="closeModal('modalStatus')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="s-id">
+      <div class="form-group">
+        <label>Status Baru</label>
+        <select id="s-status">
+          <option value="dalam_pengiriman">Dalam Pengiriman</option>
+          <option value="terkirim">Terkirim</option>
+          <option value="retur">Retur</option>
+          <option value="gagal">Gagal</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Keterangan</label><textarea id="s-ket" rows="3" placeholder="Keterangan (opsional)"></textarea></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="submitStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Kurir -->
+<div class="modal" id="modalKurir">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalKurirTitle">Tambah Kurir</h3><button class="modal-close" onclick="closeModal('modalKurir')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="k-id">
+      <div class="form-group"><label>Nama Kurir</label><input id="k-nama" placeholder="Nama lengkap kurir"></div>
+      <div class="form-2col">
+        <div class="form-group"><label>No. HP</label><input id="k-hp" placeholder="08xx-xxxx-xxxx"></div>
+        <div class="form-group"><label>Plat Kendaraan</label><input id="k-plat" placeholder="B 1234 ABC"></div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="k-status"><option value="tersedia">Tersedia</option><option value="sibuk">Sibuk</option><option value="nonaktif">Nonaktif</option></select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:6px" onclick="submitKurir()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Rute -->
+<div class="modal" id="modalRute">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalRuteTitle">Tambah Rute</h3><button class="modal-close" onclick="closeModal('modalRute')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="r-id">
+      <div class="form-2col">
+        <div class="form-group"><label>Kode Rute</label><input id="r-kode" placeholder="RTE-JKT-BDG"></div>
+        <div class="form-group"><label>Nama Rute</label><input id="r-nama" placeholder="Jakarta - Bandung"></div>
+      </div>
+      <div class="form-2col">
+        <div class="form-group"><label>Hub Asal</label><select id="r-asal"><option value="">Pilih hub</option></select></div>
+        <div class="form-group"><label>Hub Tujuan</label><select id="r-tujuan"><option value="">Pilih hub</option></select></div>
+      </div>
+      <div class="form-2col">
+        <div class="form-group"><label>Jarak (km)</label><input type="number" id="r-jarak" step="0.1" placeholder="0.0"></div>
+        <div class="form-group"><label>Estimasi (menit)</label><input type="number" id="r-estimasi" placeholder="0"></div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="r-status"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:6px" onclick="submitRute()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hub -->
+<div class="modal" id="modalHub">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalHubTitle">Tambah Hub</h3><button class="modal-close" onclick="closeModal('modalHub')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="h-id">
+      <div class="form-2col">
+        <div class="form-group"><label>Nama Hub</label><input id="h-nama" placeholder="Hub Jakarta Pusat"></div>
+        <div class="form-group"><label>Kota</label><input id="h-kota" placeholder="Jakarta"></div>
+      </div>
+      <div class="form-group"><label>Alamat</label><input id="h-alamat" placeholder="Jl. Sudirman No. 1"></div>
+      <div class="form-2col">
+        <div class="form-group"><label>Kapasitas</label><input type="number" id="h-kapasitas" placeholder="0"></div>
+        <div class="form-group"><label>Telepon</label><input id="h-telepon" placeholder="021-xxxxxxx"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:6px" onclick="submitHub()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+const API = 'http://localhost:3000/api';
+let user = null;
+let charts = {};
+
+// ── HELPERS ──────────────────────────────────────────────────────────
+function token(){ return localStorage.getItem('token'); }
+async function api(url, opts={}){
+  const res = await fetch(API+url, {
+    ...opts,
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token(),...(opts.headers||{})}
+  });
+  if(res.status===401){ doLogout(); throw new Error('Unauthorized'); }
+  return res;
+}
+function showAlert(id, msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none',4000); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-'; }
+function fmtDT(d){ return d ? new Date(d).toLocaleString('id-ID') : '-'; }
+function badgeStatus(s){ return `<span class="badge badge-${s}">${s.replace('_',' ')}</span>`; }
+
+// ── AUTH ─────────────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+}
+function fillDemo(u,p){ document.getElementById('loginUser').value=u; document.getElementById('loginPass').value=p; }
+
+async function doLogin(){
+  const btn=document.getElementById('loginBtn');
+  btn.textContent='Memproses...'; btn.disabled=true;
+  try{
+    const res = await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('loginUser').value,password:document.getElementById('loginPass').value})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||data.message||'Login gagal');
+    localStorage.setItem('token',data.token);
+    localStorage.setItem('user',JSON.stringify(data.user));
+    initApp(data.user);
+  }catch(e){ showAlert('loginError',e.message); }
+  finally{ btn.textContent='Masuk'; btn.disabled=false; }
+}
+
+async function doRegister(){
+  const btn=document.getElementById('regBtn');
+  const nama=document.getElementById('regNama').value.trim();
+  const username=document.getElementById('regUser').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const role=document.getElementById('regRole').value;
+  const telepon=document.getElementById('regHp').value.trim();
+  const password=document.getElementById('regPass').value;
+  const pass2=document.getElementById('regPass2').value;
+  if(!nama||!username||!role||!password){ showAlert('regError','Semua field wajib diisi'); return; }
+  if(password!==pass2){ showAlert('regError','Password tidak cocok'); return; }
+  if(password.length<8){ showAlert('regError','Password minimal 8 karakter'); return; }
+  btn.textContent='Mendaftar...'; btn.disabled=true;
+  try{
+    const res = await fetch(API+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nama,username,email,role,telepon,password})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.message||'Registrasi gagal');
+    showAlert('regSuccess','Registrasi berhasil! Silakan login.');
+    document.getElementById('tab-register').querySelectorAll('input,select').forEach(el=>el.value='');
+    setTimeout(()=>switchAuthTab('login'),2000);
+  }catch(e){ showAlert('regError',e.message); }
+  finally{ btn.textContent='Daftar Akun'; btn.disabled=false; }
+}
+
+function doLogout(){
+  localStorage.clear();
+  document.getElementById('appPage').style.display='none';
+  document.getElementById('authPage').style.display='flex';
+  user=null;
+}
+</script>
+
+<script>
+// ── APP INIT ──────────────────────────────────────────────────────────
+function initApp(u){
+  user = u;
+  document.getElementById('authPage').style.display='none';
+  document.getElementById('appPage').style.display='flex';
+  document.getElementById('sideName').textContent = u.nama||u.username;
+  document.getElementById('sideRole').textContent = u.role;
+  document.getElementById('sideAvatar').textContent = (u.nama||u.username||'?').charAt(0).toUpperCase();
+  // Show/hide dispatcher-only items
+  const isDispatcher = u.role==='dispatcher';
+  document.querySelectorAll('.dispatcher-only').forEach(el=>el.style.display=isDispatcher?'':'none');
+  loadDashboard();
+}
+
+function goTo(page){
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-links li').forEach(l=>l.classList.remove('active'));
+  document.getElementById('sec-'+page).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const loaders={dashboard:loadDashboard,paket:loadPaket,kurir:loadKurir,rute:loadRute,hub:loadHub};
+  if(loaders[page]) loaders[page]();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────
+async function loadDashboard(){
+  try{
+    const dari   = document.getElementById('dashDari')?.value;
+    const sampai = document.getElementById('dashSampai')?.value;
+    const p      = new URLSearchParams();
+    if(dari)   p.set('dari', dari);
+    if(sampai) p.set('sampai', sampai);
+    const res = await api('/dashboard?' + p);
+    const d = await res.json();
+    document.getElementById('st-total').textContent = d.totalPaket;
+    document.getElementById('st-kirim').textContent = d.dalamPengiriman;
+    document.getElementById('st-terkirim').textContent = d.terkirim;
+    document.getElementById('st-retur').textContent = d.retur;
+    document.getElementById('st-ontime').textContent = d.ontimeRate+'%';
+    document.getElementById('st-gagal').textContent = d.gagal;
+    renderCharts(d);
+  }catch(e){console.error(e);}
+}
+
+function resetDashFilter(){
+  document.getElementById('dashDari').value='';
+  document.getElementById('dashSampai').value='';
+  loadDashboard();
+}
+
+function renderCharts(d){
+  // Status chart
+  if(charts.status) charts.status.destroy();
+  charts.status = new Chart(document.getElementById('chartStatus'),{
+    type:'doughnut',
+    data:{labels:['Terkirim','Dalam Pengiriman','Retur','Gagal'],
+          datasets:[{data:[d.terkirim,d.dalamPengiriman,d.retur,d.gagal],backgroundColor:['#16a34a','#7c3aed','#dc2626','#ea580c']}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+  });
+  // Rute chart
+  if(charts.rute) charts.rute.destroy();
+  charts.rute = new Chart(document.getElementById('chartRute'),{
+    type:'bar',
+    data:{labels:d.kepadatanRute.map(r=>r.kode_rute),
+          datasets:[{label:'Aktif',data:d.kepadatanRute.map(r=>r.aktif),backgroundColor:'#7c3aed'},
+                    {label:'Selesai',data:d.kepadatanRute.map(r=>r.selesai),backgroundColor:'#16a34a'},
+                    {label:'Retur',data:d.kepadatanRute.map(r=>r.retur_count),backgroundColor:'#dc2626'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true}}}
+  });
+  // Kurir chart
+  if(charts.kurir) charts.kurir.destroy();
+  charts.kurir = new Chart(document.getElementById('chartKurir'),{
+    type:'bar',
+    data:{labels:d.statsKurir.map(k=>k.nama),
+          datasets:[{label:'Total Tugas',data:d.statsKurir.map(k=>k.total_tugas),backgroundColor:'#2563eb'},
+                    {label:'Sukses',data:d.statsKurir.map(k=>k.sukses),backgroundColor:'#16a34a'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+  });
+}
+</script>
+
+<script>
+// ── PAKET ──────────────────────────────────────────────────────────────
+async function loadPaket(){
+  const search=document.getElementById('searchPaket').value;
+  const status=document.getElementById('filterStatus').value;
+  const p=new URLSearchParams();
+  if(search) p.set('search',search);
+  if(status) p.set('status',status);
+  const res = await api('/paket?'+p);
+  const data = await res.json();
+  const isDispatcher = user&&user.role==='dispatcher';
+  document.getElementById('tblPaket').innerHTML = data.length
+    ? data.map(p=>`<tr>
+        <td><strong>${p.nomor_resi}</strong></td>
+        <td>${p.pengirim}</td>
+        <td>${p.penerima}</td>
+        <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.alamat_tujuan}</td>
+        <td>${p.berat_kg} kg</td>
+        <td>${p.nama_rute||'-'}</td>
+        <td>${p.nama_kurir||'-'}</td>
+        <td>${badgeStatus(p.status)}</td>
+        <td>${fmtDate(p.tanggal_estimasi)}</td>
+        <td>${isDispatcher||user.role==='kurir'?`<button class="btn btn-sm btn-warning" onclick="openUpdateStatus(${p.id})">Update</button>`:''}
+            ${isDispatcher?`<button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="deletePaket(${p.id})">Hapus</button>`:''}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="10" style="text-align:center;color:var(--muted)">Tidak ada data</td></tr>';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('searchPaket')?.addEventListener('input',loadPaket);
+  document.getElementById('filterStatus')?.addEventListener('change',loadPaket);
+});
+
+async function openModalPaket(){
+  document.getElementById('modalPaketTitle').textContent='Paket Baru';
+  await Promise.all([fillSelectHub('p-hub-asal'),fillSelectHub('p-hub-tujuan'),fillSelectRute('p-rute'),fillSelectKurir('p-kurir')]);
+  openModal('modalPaket');
+}
+async function fillSelectHub(id){
+  const res=await api('/hub'); const data=await res.json();
+  const sel=document.getElementById(id);
+  sel.innerHTML='<option value="">Pilih hub</option>'+data.map(h=>`<option value="${h.id}">${h.nama_hub}</option>`).join('');
+}
+async function fillSelectRute(id){
+  const res=await api('/rute'); const data=await res.json();
+  document.getElementById(id).innerHTML='<option value="">Pilih rute</option>'+data.map(r=>`<option value="${r.id}">${r.nama_rute}</option>`).join('');
+}
+async function fillSelectKurir(id){
+  const res=await api('/kurir'); const data=await res.json();
+  document.getElementById(id).innerHTML='<option value="">Pilih kurir</option>'+data.filter(k=>k.status==='tersedia').map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+}
+async function submitPaket(){
+  const body={
+    pengirim:document.getElementById('p-pengirim').value,
+    penerima:document.getElementById('p-penerima').value,
+    alamat_tujuan:document.getElementById('p-alamat').value,
+    berat_kg:parseFloat(document.getElementById('p-berat').value)||0,
+    tanggal_estimasi:document.getElementById('p-estimasi').value,
+    rute_id:document.getElementById('p-rute').value||null,
+    kurir_id:document.getElementById('p-kurir').value||null,
+    hub_asal_id:document.getElementById('p-hub-asal').value||null,
+    hub_tujuan_id:document.getElementById('p-hub-tujuan').value||null,
+  };
+  const res=await api('/paket',{method:'POST',body:JSON.stringify(body)});
+  if(res.ok){ closeModal('modalPaket'); loadPaket(); }
+  else{ const e=await res.json(); alert('Error: '+(e.error||e.message)); }
+}
+
+function openUpdateStatus(id){
+  document.getElementById('s-id').value=id;
+  document.getElementById('s-ket').value='';
+  openModal('modalStatus');
+}
+async function submitStatus(){
+  const id=document.getElementById('s-id').value;
+  const res=await api('/paket/'+id+'/status',{method:'PUT',body:JSON.stringify({status:document.getElementById('s-status').value,keterangan:document.getElementById('s-ket').value})});
+  if(res.ok){ closeModal('modalStatus'); loadPaket(); loadDashboard(); }
+  else{ const e=await res.json(); alert('Error: '+(e.error||e.message)); }
+}
+async function deletePaket(id){
+  if(!confirm('Hapus paket ini?')) return;
+  await api('/paket/'+id,{method:'DELETE'});
+  loadPaket();
+}
+</script>
+
+<script>
+// ── TRACKING ──────────────────────────────────────────────────────────
+async function doTrack(){
+  const resi=document.getElementById('trackInput').value.trim();
+  if(!resi) return;
+  try{
+    const res=await fetch(API+'/track/'+resi,{headers:{'Authorization':'Bearer '+token()}});
+    const data=await res.json();
+    if(!res.ok){ alert(data.error||'Paket tidak ditemukan'); return; }
+    const p=data.paket;
+    document.getElementById('trackResi').innerHTML=`<i class="fas fa-box" style="color:var(--sec)"></i> ${p.nomor_resi} &nbsp; ${badgeStatus(p.status)}`;
+    document.getElementById('trackInfo').innerHTML=`
+      <div class="info-item"><label>Pengirim</label><p>${p.pengirim}</p></div>
+      <div class="info-item"><label>Penerima</label><p>${p.penerima}</p></div>
+      <div class="info-item"><label>Alamat Tujuan</label><p>${p.alamat_tujuan}</p></div>
+      <div class="info-item"><label>Berat</label><p>${p.berat_kg} kg</p></div>
+      <div class="info-item"><label>Rute</label><p>${p.nama_rute||'-'}</p></div>
+      <div class="info-item"><label>Kurir</label><p>${p.nama_kurir||'-'}</p></div>
+      <div class="info-item"><label>Estimasi</label><p>${fmtDate(p.tanggal_estimasi)}</p></div>
+      <div class="info-item"><label>Diterima</label><p>${fmtDT(p.tanggal_terima)}</p></div>`;
+    document.getElementById('trackTimeline').innerHTML=data.logs.map(l=>`
+      <div class="tl-item">
+        <div class="tl-time">${fmtDT(l.created_at)}</div>
+        <div class="tl-title">${l.status.replace('_',' ').toUpperCase()}</div>
+        <div class="tl-desc">${l.keterangan||''}</div>
+      </div>`).join('');
+    document.getElementById('trackResult').style.display='block';
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+// ── KURIR ──────────────────────────────────────────────────────────────
+async function loadKurir(){
+  const res=await api('/kurir'); const data=await res.json();
+  document.getElementById('tblKurir').innerHTML=data.length
+    ?data.map(k=>`<tr>
+        <td>${k.nama}</td><td>${k.no_hp||'-'}</td><td>${k.plat_kendaraan||'-'}</td>
+        <td>${badgeStatus(k.status)}</td>
+        <td><button class="btn btn-sm btn-warning" onclick="editKurir(${k.id},'${k.nama}','${k.no_hp||''}','${k.plat_kendaraan||''}','${k.status}')">Edit</button>
+            <button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="deleteKurir(${k.id})">Hapus</button></td>
+      </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;color:var(--muted)">Tidak ada data</td></tr>';
+}
+function openModalKurir(){
+  document.getElementById('modalKurirTitle').textContent='Tambah Kurir';
+  document.getElementById('k-id').value='';
+  ['k-nama','k-hp','k-plat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('k-status').value='tersedia';
+  openModal('modalKurir');
+}
+function editKurir(id,nama,hp,plat,status){
+  document.getElementById('modalKurirTitle').textContent='Edit Kurir';
+  document.getElementById('k-id').value=id;
+  document.getElementById('k-nama').value=nama;
+  document.getElementById('k-hp').value=hp;
+  document.getElementById('k-plat').value=plat;
+  document.getElementById('k-status').value=status;
+  openModal('modalKurir');
+}
+async function submitKurir(){
+  const id=document.getElementById('k-id').value;
+  const body={nama:document.getElementById('k-nama').value,no_hp:document.getElementById('k-hp').value,plat_kendaraan:document.getElementById('k-plat').value,status:document.getElementById('k-status').value};
+  const res=id?await api('/kurir/'+id,{method:'PUT',body:JSON.stringify(body)}):await api('/kurir',{method:'POST',body:JSON.stringify(body)});
+  if(res.ok){ closeModal('modalKurir'); loadKurir(); }
+  else{ const e=await res.json(); alert(e.error||e.message); }
+}
+async function deleteKurir(id){ if(!confirm('Hapus kurir ini?')) return; await api('/kurir/'+id,{method:'DELETE'}); loadKurir(); }
+
+// ── RUTE ──────────────────────────────────────────────────────────────
+async function loadRute(){
+  const res=await api('/rute'); const data=await res.json();
+  document.getElementById('tblRute').innerHTML=data.length
+    ?data.map(r=>`<tr>
+        <td><strong>${r.kode_rute}</strong></td><td>${r.nama_rute}</td><td>${r.asal||'-'}</td><td>${r.tujuan||'-'}</td>
+        <td>${r.jarak_km} km</td><td>${r.estimasi_waktu_menit} mnt</td><td>${badgeStatus(r.status)}</td>
+        <td><button class="btn btn-sm btn-warning" onclick="editRute(${JSON.stringify(r).split('"').join('&quot;')})">Edit</button>
+            <button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="deleteRute(${r.id})">Hapus</button></td>
+      </tr>`).join('')
+    :'<tr><td colspan="8" style="text-align:center;color:var(--muted)">Tidak ada data</td></tr>';
+}
+async function openModalRute(){
+  document.getElementById('modalRuteTitle').textContent='Tambah Rute';
+  document.getElementById('r-id').value='';
+  ['r-kode','r-nama','r-jarak','r-estimasi'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('r-status').value='aktif';
+  await Promise.all([fillSelectHub('r-asal'),fillSelectHub('r-tujuan')]);
+  openModal('modalRute');
+}
+async function editRute(r){
+  document.getElementById('modalRuteTitle').textContent='Edit Rute';
+  document.getElementById('r-id').value=r.id;
+  document.getElementById('r-kode').value=r.kode_rute;
+  document.getElementById('r-nama').value=r.nama_rute;
+  document.getElementById('r-jarak').value=r.jarak_km;
+  document.getElementById('r-estimasi').value=r.estimasi_waktu_menit;
+  document.getElementById('r-status').value=r.status;
+  await Promise.all([fillSelectHub('r-asal'),fillSelectHub('r-tujuan')]);
+  document.getElementById('r-asal').value=r.asal_hub_id;
+  document.getElementById('r-tujuan').value=r.tujuan_hub_id;
+  openModal('modalRute');
+}
+async function submitRute(){
+  const id=document.getElementById('r-id').value;
+  const body={kode_rute:document.getElementById('r-kode').value,nama_rute:document.getElementById('r-nama').value,asal_hub_id:document.getElementById('r-asal').value,tujuan_hub_id:document.getElementById('r-tujuan').value,jarak_km:parseFloat(document.getElementById('r-jarak').value)||0,estimasi_waktu_menit:parseInt(document.getElementById('r-estimasi').value)||0,status:document.getElementById('r-status').value};
+  const res=id?await api('/rute/'+id,{method:'PUT',body:JSON.stringify(body)}):await api('/rute',{method:'POST',body:JSON.stringify(body)});
+  if(res.ok){ closeModal('modalRute'); loadRute(); }
+  else{ const e=await res.json(); alert(e.error||e.message); }
+}
+async function deleteRute(id){ if(!confirm('Hapus rute ini?')) return; await api('/rute/'+id,{method:'DELETE'}); loadRute(); }
+
+// ── HUB ──────────────────────────────────────────────────────────────
+async function loadHub(){
+  const res=await api('/hub'); const data=await res.json();
+  document.getElementById('tblHub').innerHTML=data.length
+    ?data.map(h=>`<tr>
+        <td><strong>${h.nama_hub}</strong></td><td>${h.kota}</td><td>${h.alamat}</td>
+        <td>${h.kapasitas}</td><td>${h.telepon||'-'}</td>
+        <td><button class="btn btn-sm btn-warning" onclick="editHub(${h.id},'${h.nama_hub}','${h.kota}','${h.alamat.replace(/'/g,'&#39;')}',${h.kapasitas},'${h.telepon||''}')">Edit</button>
+            <button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="deleteHub(${h.id})">Hapus</button></td>
+      </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--muted)">Tidak ada data</td></tr>';
+}
+function openModalHub(){
+  document.getElementById('modalHubTitle').textContent='Tambah Hub';
+  document.getElementById('h-id').value='';
+  ['h-nama','h-kota','h-alamat','h-kapasitas','h-telepon'].forEach(id=>document.getElementById(id).value='');
+  openModal('modalHub');
+}
+function editHub(id,nama,kota,alamat,kapasitas,telepon){
+  document.getElementById('modalHubTitle').textContent='Edit Hub';
+  document.getElementById('h-id').value=id;
+  document.getElementById('h-nama').value=nama;
+  document.getElementById('h-kota').value=kota;
+  document.getElementById('h-alamat').value=alamat;
+  document.getElementById('h-kapasitas').value=kapasitas;
+  document.getElementById('h-telepon').value=telepon;
+  openModal('modalHub');
+}
+async function submitHub(){
+  const id=document.getElementById('h-id').value;
+  const body={nama_hub:document.getElementById('h-nama').value,kota:document.getElementById('h-kota').value,alamat:document.getElementById('h-alamat').value,kapasitas:parseInt(document.getElementById('h-kapasitas').value)||0,telepon:document.getElementById('h-telepon').value};
+  const res=id?await api('/hub/'+id,{method:'PUT',body:JSON.stringify(body)}):await api('/hub',{method:'POST',body:JSON.stringify(body)});
+  if(res.ok){ closeModal('modalHub'); loadHub(); }
+  else{ const e=await res.json(); alert(e.error||e.message); }
+}
+async function deleteHub(id){ if(!confirm('Hapus hub ini?')) return; await api('/hub/'+id,{method:'DELETE'}); loadHub(); }
+
+// ── BOOT ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=localStorage.getItem('token');
+  const u=localStorage.getItem('user');
+  if(t&&u){ initApp(JSON.parse(u)); }
+  // Enter key on login
+  ['loginUser','loginPass'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+  });
+});
+</script>
+</body>
+</html>
